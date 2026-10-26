@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BugHunter Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <aside>
+    <h2>🐞 BugHunter</h2>
+    <p>QA Command Center</p>
+    <a href="/">Overview</a>
+    <a href="#findings">Findings</a>
+    <a href="#evidence">Evidence</a>
+    <p class="note">Local testing agent powered by Playwright.</p>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <small>QUALITY ENGINEERING</small>
+        <h1>QA Command Center</h1>
+        <p>Explore your application and detect defects.</p>
+      </div>
+      <span id="connection">Connecting...</span>
+    </header>
+
+    <section class="metrics">
+      <article><small>Detected bugs</small><h2 id="bug-count">—</h2></article>
+      <article><small>Pages explored</small><h2 id="pages">—</h2></article>
+      <article><small>Run status</small><h2 id="run-status">Idle</h2></article>
+    </section>
+
+    <section class="panel">
+      <h2>Run tests</h2>
+      <label for="target">Target application URL</label>
+      <input id="target" value="http://127.0.0.1:8000">
+
+      <div class="actions">
+        <button id="start-target">Start demo app</button>
+        <button id="explore">Start exploration</button>
+        <button id="verify">Verify fixes</button>
+      </div>
+
+      <h3>Agent output</h3>
+      <pre id="output">Waiting for backend...</pre>
+    </section>
+
+    <section class="panel" id="findings">
+      <h2>Latest findings</h2>
+      <div id="findings-list">No report loaded yet.</div>
+      <button id="open-report">Open JSON report</button>
+    </section>
+
+    <section class="panel" id="evidence">
+      <h2>Evidence files</h2>
+      <button id="load-evidence">Load evidence</button>
+      <div id="evidence-list"></div>
+    </section>
+  </main>
+
+  <div id="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
