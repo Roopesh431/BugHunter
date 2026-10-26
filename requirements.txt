@@ -1,0 +1,5 @@
+PyGithub>=2.5
+python-dotenv>=1.0
+requests>=2.31
+playwright>=1.40
+# then: python -m playwright install chromium
