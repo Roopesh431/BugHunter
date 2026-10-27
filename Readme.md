@@ -1,29 +1,67 @@
 # BugHunter — AI-Powered Autonomous QA Agent
 
-BugHunter is a Python-based QA agent that explores web applications through a real browser, identifies potential bugs, captures screenshots, generates structured bug reports, and can create GitHub issues automatically.
+BugHunter is a Python-based QA agent that explores web applications through a real browser, identifies potential defects, captures screenshots, generates structured reports, and supports GitHub issue integration.
 
-Its goal is to reduce repetitive manual testing and make software defects easier to reproduce, investigate, and verify.
+It combines browser automation, interaction checks, failure detection, and optional LLM-assisted summaries to help developers identify and investigate application defects.
 
-## Problem
+BugHunter also includes a **QA Command Center**, a browser-based dashboard for starting scans, reviewing findings, and inspecting evidence.
 
-Manual testing requires developers and QA engineers to repeatedly navigate pages, click controls, test form inputs, inspect browser errors, and document failures.
+## Table of Contents
 
-Important edge cases can be missed, and reporting bugs with reliable reproduction steps takes time.
+- [Problem Statement](#problem-statement)
+- [Key Features](#key-features)
+- [How It Works](#how-it-works)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Environment Configuration](#environment-configuration)
+- [Running BugHunter](#running-bughunter)
+- [QA Command Center](#qa-command-center)
+- [Understanding Findings](#understanding-findings)
+- [Reports and Evidence](#reports-and-evidence)
+- [GitHub Issue Integration](#github-issue-integration)
+- [Regression Verification](#regression-verification)
+- [Limitations](#limitations)
+- [Future Improvements](#future-improvements)
+- [Author](#author)
 
-BugHunter automates much of this process using browser automation, failure detection, and LLM-assisted reporting.
+## Problem Statement
+
+Manual QA requires developers and testers to navigate pages, interact with controls, test edge cases, inspect errors, and document defects.
+
+These repetitive tasks can consume time, and failures may be difficult to reproduce without reliable screenshots and structured reports.
+
+BugHunter aims to automate part of this process by exploring an application, detecting suspicious behavior, recording evidence, and generating actionable bug reports.
 
 ## Key Features
 
-- **Autonomous browser exploration:** Uses Playwright and Chromium to explore reachable pages and interact with visible controls.
-- **Edge-case testing:** Tests empty inputs, whitespace, long strings, special characters, non-ASCII text, and other input variations.
-- **JavaScript error detection:** Captures uncaught browser errors and relevant console errors.
-- **HTTP failure detection:** Records relevant HTTP 4xx and 5xx responses.
-- **Behavioral checks:** Detects controls that appear to do nothing, such as a Delete button that triggers no request or visible change.
-- **Screenshot evidence:** Saves screenshots of detected failures in the `evidence/` directory.
-- **Structured reporting:** Generates `evidence/report.json` with bug details, reproduction steps, severity, and evidence.
-- **AI-assisted summaries:** Uses an LLM to turn raw browser signals into understandable bug titles and reproduction instructions. Heuristic summaries provide a fallback when the LLM is unavailable.
-- **GitHub issue integration:** Can create one issue per bug and skip duplicates with matching open issue titles.
-- **Regression verification:** Replays saved test cases to check whether previously detected bugs still reproduce.
+- **Autonomous browser exploration:** Uses Playwright and Chromium to navigate reachable pages and interact with visible elements.
+- **Edge-case testing:** Attempts input variations such as empty values and whitespace where supported by the exploration workflow.
+- **JavaScript error detection:** Captures relevant browser-side errors.
+- **HTTP failure detection:** Records relevant HTTP error responses.
+- **Interaction monitoring:** Identifies suspicious controls that appear to produce no visible effect or network request.
+- **Screenshot evidence:** Saves screenshots associated with detected findings.
+- **Structured reports:** Generates JSON and Markdown reports when supported by the configured agent workflow.
+- **AI-assisted summaries:** Uses an LLM to help summarize detected failures when the API is available.
+- **Fallback summaries:** Can use raw error information when LLM summarization is unavailable.
+- **GitHub issue integration:** Supports creating issues for detected bugs when configured.
+- **Regression verification:** Replays saved test cases to help check whether previously detected behavior has changed.
+- **QA Command Center:** Provides a web dashboard to run scans and review results.
+
+## How It Works
+
+1. Start the target web application.
+2. Configure the target URL.
+3. Launch BugHunter through the CLI or dashboard.
+4. Use Playwright and Chromium to explore accessible pages.
+5. Interact with visible controls and try relevant input variations.
+6. Observe browser errors, HTTP responses, and interaction behavior.
+7. Record potential defects and capture screenshots.
+8. Generate a structured report and test suite.
+9. Optionally create GitHub issues when integration is enabled.
+10. Replay saved tests after fixes to help check for regressions.
 
 ## Architecture
 
@@ -34,214 +72,363 @@ Target Web Application
   Playwright + Chromium
           |
           v
-  Automated Exploration
+  Browser Exploration
           |
           v
-  Failure Detection
-  - JavaScript errors
-  - HTTP failures
-  - Broken interactions
+   Failure Detection
+   - JavaScript errors
+   - HTTP failures
+   - Suspicious interactions
           |
           v
-  Screenshot + Test Evidence
+  Screenshots and Test Evidence
           |
           v
-  LLM-Assisted Bug Summaries
+  Bug Summaries and Reports
+          |
+          +------> JSON / Markdown Reports
+          |
+          +------> GitHub Issues (optional)
           |
           v
-  report.json + GitHub Issues
-          |
-          v
-  Replay Tests to Verify Fixes
+    Regression Verification
 ```
 
 ## Tech Stack
 
-- Python 3.13
-- FastAPI and Uvicorn for the demo application
-- Playwright and Chromium for browser automation
-- Requests and python-dotenv
-- PyGithub for GitHub issue integration
-- An OpenAI-compatible LLM API for optional AI-generated summaries
+- **Language:** Python 3.13
+- **Demo application and dashboard backend:** FastAPI and Uvicorn
+- **Browser automation:** Playwright and Chromium
+- **HTTP and environment configuration:** Requests and python-dotenv
+- **GitHub integration:** PyGithub
+- **AI integration:** OpenAI-compatible LLM API
+- **Frontend:** HTML, CSS, and JavaScript
 
 ## Project Structure
 
 ```text
-bughunter/
+BugHunter/
 ├── app.py
 ├── agent.py
+├── dashboard_server.py
+├── dashboard/
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
 ├── requirements.txt
+├── requirements-dashboard.txt
 ├── .env.example
 ├── .gitignore
 ├── AGENTS.md
+├── Readme.md
 └── evidence/
     ├── report.json
-    ├── suite.json
-    └── screenshots/
+    ├── report.md
+    └── suite.json
 ```
 
-The exact evidence filenames and directory layout depend on your implementation. Screenshots and generated reports should not be committed unless you intentionally want to publish demo evidence.
+The contents of `evidence/` are generated by the agent, and screenshot filenames vary between runs. Your actual repository may contain additional files.
 
-## Setup
+## Prerequisites
 
-### 1. Create a virtual environment
+- Python 3.10 or newer; Python 3.13 is used in development.
+- Git installed on your machine.
+- A web application accessible to the browser agent.
+- Playwright and its Chromium browser installation.
+- An LLM API key for AI-assisted summaries, if desired.
+- A GitHub token with appropriate permissions if issue creation is enabled.
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+cd YOUR_REPOSITORY
+```
+
+Replace the placeholders with your actual repository details.
+
+### 2. Create a virtual environment
 
 Windows PowerShell:
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\activate
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 ```
 
-### 2. Install dependencies
+### 3. Install dependencies
 
-```bash
-pip install -r requirements.txt
+Install the main application dependencies:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+Install the dashboard dependencies:
+
+```powershell
+python -m pip install -r requirements-dashboard.txt
+```
+
+Install Chromium for Playwright:
+
+```powershell
 python -m playwright install chromium
 ```
 
-### 3. Configure environment variables
+If a dependency is already installed, pip will normally report that it is satisfied.
+
+## Environment Configuration
+
+Create your local environment file:
 
 ```powershell
-copy .env.example .env
+Copy-Item .env.example .env
 ```
 
 Example configuration:
 
 ```dotenv
-APP_URL=http://localhost:8000
+APP_URL=http://127.0.0.1:8000
 
 # Optional: LLM-assisted bug summaries
-LLM_API_KEY=your_llm_api_key
-LLM_MODEL=your_supported_model
-LLM_BASE_URL=https://api.openai.com/v1
+LLM_API_KEY=your_gemini_api_key
+LLM_MODEL=gemini-2.5-flash
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
 
-# Optional: GitHub issue creation
+# Optional: GitHub issue integration
 GITHUB_TOKEN=your_github_token
 GITHUB_REPO=YOUR_USERNAME/YOUR_REPOSITORY
 
-# Optional: externally accessible screenshot hosting
-# GITHUB_SCREENSHOT_BASE=https://your-public-host/evidence
+# Dashboard port, if read by your dashboard configuration
+DASHBOARD_PORT=8010
 ```
 
-Use a GitHub token with the required issue-creation permissions. Keep secrets out of source control.
+Configuration notes:
 
-An LLM key is optional if your agent supports heuristic summaries. For screenshot embedding in GitHub issues, the image URL must be accessible to GitHub viewers; a local file path alone cannot display an image remotely.
+- `APP_URL` identifies the target application where this setting is used by the backend.
+- `LLM_API_KEY` contains your LLM provider's API key.
+- `LLM_MODEL` identifies a model supported by your provider.
+- `LLM_BASE_URL` specifies the provider's OpenAI-compatible API endpoint.
+- `GITHUB_TOKEN` and `GITHUB_REPO` are used for optional GitHub issue integration.
+- `DASHBOARD_PORT` configures the dashboard port if supported by your installed version.
+
+Use the environment variable names expected by your current code. LLM configuration is optional if you are running a workflow that supports heuristic or raw-error summaries without an LLM.
+
+**Security:** Never commit `.env` or expose API keys in frontend JavaScript. Keep credentials in the backend and ensure `.env` is excluded by `.gitignore`.
 
 ## Running BugHunter
 
-### Terminal 1 — Start the demo application
+BugHunter provides a demo application, a command-line agent, and a web dashboard.
 
-```bash
+### Option A — Start the QA Command Center
+
+From the BugHunter project directory, activate your virtual environment and run:
+
+```powershell
+python dashboard_server.py
+```
+
+Open the dashboard:
+
+http://127.0.0.1:8010
+
+The dashboard can launch the demo application and trigger exploration through its available controls.
+
+### Option B — Start the demo application manually
+
+Open a separate terminal in the BugHunter directory, activate the virtual environment, and run:
+
+```powershell
 python -m uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-Open http://127.0.0.1:8000 in your browser.
+Open the demo application:
 
-The included to-do application is intentionally buggy and is meant to serve as a controlled testing target.
+http://127.0.0.1:8000
 
-### Terminal 2 — Explore and report bugs
+The included application is intended as a controlled testing target and may contain deliberate defects.
 
-```bash
+### Explore the application using the CLI
+
+In another terminal, run:
+
+```powershell
 python agent.py explore --login demo
 ```
 
-Optional variants:
+Optional examples, depending on the options exposed by your installed version:
 
-```bash
+```powershell
 python agent.py explore --headed --max-actions 30
 python agent.py explore --no-llm
 ```
 
-The headed mode lets you watch Chromium interact with the application. The no-LLM mode is useful for demonstrating that core failure detection does not depend on an AI API being available.
+The headed mode allows you to watch the browser interact with the application. The no-LLM mode is useful for demonstrating the underlying detection workflow without AI summaries.
 
-### Verify fixes
+Check available options before using optional flags:
 
-After correcting the application bugs, restart the application if necessary and run:
+```powershell
+python agent.py --help
+python agent.py explore --help
+```
 
-```bash
+## QA Command Center
+
+The **QA Command Center** provides a browser interface for operating BugHunter.
+
+### Dashboard features
+
+- Backend connectivity status.
+- Target application URL configuration.
+- Start the demo application.
+- Start automated exploration.
+- Verify previously saved tests.
+- View detected bug counts and explored pages.
+- Inspect agent output and run status.
+- Review findings, severity, URLs, and descriptions.
+- Load screenshot evidence.
+- Open the generated report.
+
+### Demonstration workflow
+
+1. Start the dashboard at `http://127.0.0.1:8010`.
+2. Confirm the demo application is running at `http://127.0.0.1:8000`.
+3. Select the target URL in the dashboard.
+4. Start exploration.
+5. Review the detected findings.
+6. Load the screenshots and generated report.
+7. Inspect the output before classifying any finding as a confirmed defect.
+
+The dashboard and CLI share the same underlying agent workflow, so reports and evidence should be interpreted in the context of the latest run.
+
+## Understanding Findings
+
+BugHunter identifies suspicious behavior that may indicate a defect.
+
+For example, during one development scan, the agent reported:
+
+- An Add Task control that appeared to have no effect.
+- A Delete control that appeared to have no effect.
+- Empty task submission that appeared to have no effect.
+- Whitespace-only task submission that appeared to have no effect.
+
+That run explored three pages, performed 16 actions, and recorded four findings.
+
+These results are examples from a development run, not a guarantee that every scan will detect the same number of bugs.
+
+A finding is not automatically proof of a defect. Some applications intentionally reject inputs or perform actions without issuing network requests. Review the application's expected behavior and the associated evidence before treating a finding as confirmed.
+
+## Reports and Evidence
+
+BugHunter can generate artifacts such as:
+
+```text
+evidence/
+├── report.json
+├── report.md
+├── suite.json
+└── screenshots/
+```
+
+Exact paths and filenames depend on the configured implementation and run.
+
+### JSON report
+
+The JSON report stores structured findings that can be inspected by other tools or used by the dashboard.
+
+A finding may include fields such as:
+
+- Bug title
+- Severity
+- URL
+- Failed action
+- Error message
+- Screenshot or evidence path
+
+The exact schema depends on the current agent implementation.
+
+### Screenshots
+
+Screenshots capture the browser state associated with a finding. Use them to help reproduce and investigate the behavior.
+
+Generated evidence may contain local paths or application data. Review it before committing files to a public repository.
+
+## GitHub Issue Integration
+
+When configured and supported by the active workflow, BugHunter can submit findings to GitHub Issues.
+
+The integration can help:
+
+1. Turn a detected failure into a report for developers.
+2. Include a summary and relevant reproduction details.
+3. Link evidence when it is accessible to the issue's readers.
+4. Avoid some duplicate issues by checking existing issue titles.
+
+GitHub issue creation requires appropriate token permissions. Keep the token private.
+
+A local screenshot path is not automatically accessible to GitHub users. To display a screenshot remotely, publish it to an approved location and use an accessible URL.
+
+## Regression Verification
+
+BugHunter supports replaying saved test cases to help verify changes after a defect is fixed.
+
+A typical workflow is:
+
+1. Run exploration against the application.
+2. Inspect the report and screenshot evidence.
+3. Identify a defect and correct the application.
+4. Restart the application if necessary.
+5. Run the verification command supported by your version.
+6. Review whether the previously observed behavior still reproduces.
+
+The CLI verification command in the current project is:
+
+```powershell
 python agent.py verify
 ```
 
-To preview verification results without modifying GitHub issues:
+Check the available options first:
 
-```bash
-python agent.py verify --dry-run
+```powershell
+python agent.py verify --help
 ```
 
-Use the exact command-line options exposed by your current `agent.py` if your local version differs.
+Only use additional flags, such as a dry-run option, if your installed version explicitly supports them.
 
-## Demonstration Bugs
+Regression verification depends on the saved test suite, application state, and the reproducibility of the original behavior.
 
-The included demo application contains three deliberate defects:
+## Safety and Review
 
-| Bug | Expected detection |
-|---|---|
-| Adding a task with an empty title causes a server error | HTTP 500 and a browser-side error |
-| Delete buttons have no effective click handler | No DELETE request or expected state change |
-| Opening `/profile` without a session causes a server error | HTTP 500 instead of redirecting to login |
-
-These defects provide known ground truth against which to demonstrate the agent's findings.
-
-## Example Report
-
-A simplified representation of the structured output:
-
-```json
-{
-  "bugs": [
-    {
-      "bug_title": "Adding an empty task causes a server error",
-      "url": "http://localhost:8000/",
-      "action_that_failed": "Submit Add Task with an empty input",
-      "error_message": "HTTP 500 Internal Server Error"
-    }
-  ]
-}
-```
-
-This is an illustrative example, not a copy of an actual run. Consult `evidence/report.json` for your real output and the complete schema.
-
-## GitHub Issue Automation
-
-When issue integration is enabled, BugHunter can:
-
-1. Summarize detected failures.
-2. Search for an existing open issue with the same normalized title.
-3. Create an issue when no duplicate is found.
-4. Include reproduction steps, the error message, and environment information.
-5. Link or embed screenshot evidence when a valid, accessible image URL is configured.
-
-## Regression Testing
-
-BugHunter can save reproducible test cases and replay them after a developer changes the application.
-
-A useful demonstration is to:
-
-1. Run `explore` against the buggy application.
-2. Inspect the report and the created GitHub issues.
-3. Fix one of the defects.
-4. Run `verify` against the fixed application.
-5. Show the updated verification result and any corresponding GitHub issue comment or closure.
-
-This makes BugHunter more than a one-time bug detector: it can also help validate whether a reported defect has been fixed.
+- Test only applications you own or are authorized to assess.
+- Use the included demo application when presenting the project.
+- Review screenshots and reports before publishing them.
+- Keep secrets and tokens out of source control.
+- Treat automated findings as candidates that require validation.
+- Avoid sending real personal or confidential application data to an external LLM without appropriate authorization.
+- Review GitHub issues before creating or publishing them.
 
 ## Limitations
 
-- The agent can only discover routes it can reach or that are explicitly supplied.
 - Automated exploration cannot guarantee discovery of every defect.
-- Heuristic and LLM-generated summaries may require human review.
-- Some interactions require application-specific test logic.
-- Regression verification depends on saved test cases and reproducible application state.
-- GitHub screenshot rendering requires publicly or otherwise appropriately accessible image URLs.
+- The agent can only reach routes available to it or explicitly supplied through its configuration.
+- Some interactions require application-specific logic to test correctly.
+- A control that appears to do nothing is not necessarily defective.
+- LLM-generated summaries may be incomplete or inaccurate.
+- Detection can be affected by timing, application state, authentication, and network conditions.
+- Regression verification depends on saved and reproducible tests.
+- Remote screenshot display requires an accessible image URL.
 
 ## Future Improvements
 
 - CI/CD integration and automated regression checks.
-- Support for authenticated applications and additional browser states.
+- Improved route discovery and authenticated browser workflows.
 - Better test coverage metrics and severity prioritization.
-- HTML reports with clickable screenshots.
-- Support for additional application frameworks and API testing.
+- HTML reports with clickable evidence.
+- More reliable detection of form validation and asynchronous interactions.
+- Support for additional web application frameworks and API testing.
 
 ## Author
 
