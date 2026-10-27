@@ -1,67 +1,381 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BugHunter Dashboard</title>
+  <meta name="theme-color" content="#111923">
+  <title>BugHunter — Forensic QA Console</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <aside>
-    <h2>🐞 BugHunter</h2>
-    <p>QA Command Center</p>
-    <a href="/">Overview</a>
-    <a href="#findings">Findings</a>
-    <a href="#evidence">Evidence</a>
-    <p class="note">Local testing agent powered by Playwright.</p>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="BugHunter overview">
+      <span class="brand-mark">B<span>H</span></span>
+      <span class="brand-copy">
+        <strong>BugHunter</strong>
+        <small>QUALITY ENGINEERING</small>
+      </span>
+    </a>
+
+    <div class="side-label">INVESTIGATION</div>
+
+    <a href="/" class="nav-link active">
+      <span class="nav-symbol">◈</span>
+      <span>Console overview</span>
+      <span class="nav-edge"></span>
+    </a>
+
+    <a href="#findings" class="nav-link">
+      <span class="nav-symbol">⌕</span>
+      <span>Findings queue</span>
+    </a>
+
+    <a href="#evidence" class="nav-link">
+      <span class="nav-symbol">▧</span>
+      <span>Evidence files</span>
+    </a>
+
+    <a href="#execution" class="nav-link">
+      <span class="nav-symbol">›_</span>
+      <span>Execution log</span>
+    </a>
+
+    <div class="sidebar-bottom">
+      <div class="side-divider"></div>
+
+      <div class="agent-card">
+        <div class="agent-symbol">BH</div>
+        <div>
+          <strong>Local test agent</strong>
+          <small>Playwright / Chromium</small>
+        </div>
+      </div>
+
+      <p class="side-note">
+        Explore deliberately.<br>
+        Record evidence. Verify fixes.
+      </p>
+
+      <div class="local-label">
+        <span class="local-dot"></span>
+        LOCAL ENVIRONMENT
+      </div>
+    </div>
   </aside>
 
-  <main>
-    <header>
-      <div>
-        <small>QUALITY ENGINEERING</small>
-        <h1>QA Command Center</h1>
-        <p>Explore your application and detect defects.</p>
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumbs">
+        <span>BUGHUNTER</span>
+        <span class="crumb-sep">/</span>
+        <strong>INVESTIGATION CONSOLE</strong>
       </div>
-      <span id="connection">Connecting...</span>
+
+      <div id="connection" class="connection">
+        <span class="connection-dot"></span>
+        Connecting...
+      </div>
     </header>
 
-    <section class="metrics">
-      <article><small>Detected bugs</small><h2 id="bug-count">—</h2></article>
-      <article><small>Pages explored</small><h2 id="pages">—</h2></article>
-      <article><small>Run status</small><h2 id="run-status">Idle</h2></article>
-    </section>
+    <div class="content">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <span class="eyebrow-line"></span>
+            APPLICATION QUALITY / FIELD REPORT
+          </div>
 
-    <section class="panel">
-      <h2>Run tests</h2>
-      <label for="target">Target application URL</label>
-      <input id="target" value="http://127.0.0.1:8000">
+          <h1>Find the fault.<br><span>Keep the evidence.</span></h1>
 
-      <div class="actions">
-        <button id="start-target">Start demo app</button>
-        <button id="explore">Start exploration</button>
-        <button id="verify">Verify fixes</button>
+          <p>
+            Explore application behavior, identify potential defects,
+            and preserve the evidence needed to investigate them.
+          </p>
+        </div>
+
+        <div class="hero-graphic" aria-hidden="true">
+          <div class="graphic-ring ring-one"></div>
+          <div class="graphic-ring ring-two"></div>
+          <div class="graphic-cross cross-one"></div>
+          <div class="graphic-cross cross-two"></div>
+          <div class="graphic-center">
+            <span>BH</span>
+          </div>
+          <span class="graphic-label label-top">TEST / TRACE</span>
+          <span class="graphic-label label-bottom">BUILD 001</span>
+        </div>
+      </section>
+
+      <section class="target-bar">
+        <div class="target-label">
+          <span class="target-icon">◎</span>
+          <div>
+            <small>ACTIVE TEST TARGET</small>
+            <strong>Application endpoint</strong>
+          </div>
+        </div>
+
+        <label class="target-input-wrap" for="target">
+          <span>URL</span>
+          <input
+            id="target"
+            type="url"
+            value="http://127.0.0.1:8000"
+            spellcheck="false"
+            autocomplete="url"
+          >
+        </label>
+
+        <button id="start-target" class="button-muted" type="button">
+          <span>↗</span> Start demo app
+        </button>
+      </section>
+
+      <section class="metrics" aria-label="Current scan metrics">
+        <article class="metric metric-findings">
+          <div class="metric-top">
+            <span class="metric-label">POTENTIAL FINDINGS</span>
+            <span class="metric-symbol">⌕</span>
+          </div>
+          <div id="bug-count" class="metric-value">—</div>
+          <div class="metric-foot">
+            <span class="metric-marker lime-marker"></span>
+            Reported by latest available status
+          </div>
+        </article>
+
+        <article class="metric">
+          <div class="metric-top">
+            <span class="metric-label">PAGES EXPLORED</span>
+            <span class="metric-symbol">▤</span>
+          </div>
+          <div id="pages" class="metric-value">—</div>
+          <div class="metric-foot">
+            <span class="metric-marker"></span>
+            Pages reported by backend
+          </div>
+        </article>
+
+        <article class="metric">
+          <div class="metric-top">
+            <span class="metric-label">RUN STATUS</span>
+            <span class="metric-symbol">◷</span>
+          </div>
+          <div id="run-status" class="metric-value metric-status">Idle</div>
+          <div class="metric-foot">
+            <span class="metric-marker status-marker"></span>
+            Latest backend state
+          </div>
+        </article>
+      </section>
+
+      <div class="section-heading">
+        <div class="section-title-wrap">
+          <span class="section-index">01</span>
+          <h2>Control room</h2>
+        </div>
+        <span class="section-caption">EXECUTION CONTROLS</span>
       </div>
 
-      <h3>Agent output</h3>
-      <pre id="output">Waiting for backend...</pre>
-    </section>
+      <section class="control-grid">
+        <div class="panel run-panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-kicker">TEST OPERATIONS</span>
+              <h3>Choose an operation.</h3>
+            </div>
+            <span class="panel-code">OPS / 01</span>
+          </div>
 
-    <section class="panel" id="findings">
-      <h2>Latest findings</h2>
-      <div id="findings-list">No report loaded yet.</div>
-      <button id="open-report">Open JSON report</button>
-    </section>
+          <p class="panel-description">
+            Start a new exploration or verify whether previous issues
+            can still be reproduced.
+          </p>
 
-    <section class="panel" id="evidence">
-      <h2>Evidence files</h2>
-      <button id="load-evidence">Load evidence</button>
-      <div id="evidence-list"></div>
-    </section>
+          <div class="operation-row">
+            <div class="operation-icon">⌘</div>
+            <div class="operation-copy">
+              <strong>Explore application</strong>
+              <small>Navigate pages and test interactions.</small>
+            </div>
+            <button id="explore" class="button-primary" type="button">
+              Start scan <span>↗</span>
+            </button>
+          </div>
+
+          <div class="operation-row">
+            <div class="operation-icon verify-icon">✓</div>
+            <div class="operation-copy">
+              <strong>Verify fixes</strong>
+              <small>Re-run the verification workflow.</small>
+            </div>
+            <button id="verify" class="button-outline" type="button">
+              Verify <span>→</span>
+            </button>
+          </div>
+
+          <div class="operation-foot">
+            <span class="local-dot"></span>
+            Actions are sent to the existing backend.
+          </div>
+        </div>
+
+        <div class="panel activity-panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-kicker">RUN OBSERVATION</span>
+              <h3>Execution trace</h3>
+            </div>
+            <span class="trace-icon">⌁</span>
+          </div>
+
+          <div class="trace-list">
+            <div class="trace-item">
+              <span class="trace-node"></span>
+              <div>
+                <strong>Target configured</strong>
+                <small>Application URL supplied for testing.</small>
+              </div>
+              <span class="trace-index">01</span>
+            </div>
+
+            <div class="trace-item">
+              <span class="trace-node"></span>
+              <div>
+                <strong>Browser exploration</strong>
+                <small>Navigation and interactions are tested.</small>
+              </div>
+              <span class="trace-index">02</span>
+            </div>
+
+            <div class="trace-item">
+              <span class="trace-node"></span>
+              <div>
+                <strong>Findings and evidence</strong>
+                <small>Inspect the report after a run.</small>
+              </div>
+              <span class="trace-index">03</span>
+            </div>
+          </div>
+
+          <div class="trace-footer">
+            <span>WORKFLOW GUIDE</span>
+            <span>01 — 03</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-heading findings-heading">
+        <div class="section-title-wrap">
+          <span class="section-index">02</span>
+          <h2>Investigation queue</h2>
+        </div>
+        <span class="section-caption">LATEST AVAILABLE REPORT</span>
+      </div>
+
+      <section class="panel findings-panel" id="findings">
+        <div class="panel-header findings-panel-header">
+          <div>
+            <span class="panel-kicker">POTENTIAL DEFECTS</span>
+            <h3>Latest findings</h3>
+          </div>
+          <button id="open-report" class="button-outline report-button"
+            type="button">
+            <span>↓</span> Export JSON report
+          </button>
+        </div>
+
+        <div class="finding-columns">
+          <span>FINDING / DESCRIPTION</span>
+          <span>SEVERITY</span>
+          <span>EVIDENCE</span>
+        </div>
+
+        <div id="findings-list" class="findings-list">
+          <div class="empty-state">
+            <span class="empty-symbol">⌕</span>
+            <strong>No report loaded yet.</strong>
+            <p>Start an exploration to populate the investigation queue.</p>
+          </div>
+        </div>
+
+        <div class="findings-footer">
+          <span><span class="local-dot"></span> Findings reflect backend report data.</span>
+          <span>Potential defects require review.</span>
+        </div>
+      </section>
+
+      <div class="section-heading evidence-heading">
+        <div class="section-title-wrap">
+          <span class="section-index">03</span>
+          <h2>Evidence locker</h2>
+        </div>
+        <span class="section-caption">SCREENSHOTS / ARTIFACTS</span>
+      </div>
+
+      <section class="panel evidence-panel" id="evidence">
+        <div class="panel-header">
+          <div>
+            <span class="panel-kicker">CAPTURED ARTIFACTS</span>
+            <h3>Evidence files</h3>
+          </div>
+
+          <button id="load-evidence" class="button-primary" type="button">
+            Load evidence <span>↗</span>
+          </button>
+        </div>
+
+        <div class="evidence-intro">
+          <span class="evidence-symbol">▧</span>
+          <p>
+            Load available evidence from the backend to inspect screenshots
+            and other saved artifacts.
+          </p>
+        </div>
+
+        <div id="evidence-list" class="evidence-list">
+          <div class="empty-evidence">
+            Evidence has not been loaded.
+          </div>
+        </div>
+      </section>
+
+      <div class="section-heading log-heading" id="execution">
+        <div class="section-title-wrap">
+          <span class="section-index">04</span>
+          <h2>Agent output</h2>
+        </div>
+        <span class="section-caption">BACKEND STDOUT / STDERR</span>
+      </div>
+
+      <section class="terminal-panel">
+        <div class="terminal-header">
+          <div class="terminal-title">
+            <span class="terminal-prompt">›_</span>
+            <div>
+              <strong>bughunter / run.log</strong>
+              <small>OUTPUT FROM THE ACTIVE WORKFLOW</small>
+            </div>
+          </div>
+          <span class="terminal-tag">LOCAL</span>
+        </div>
+
+        <pre id="output">Waiting for backend...</pre>
+
+        <div class="terminal-footer">
+          <span><span class="local-dot"></span> Backend-polled output</span>
+          <span>BugHunter / QA console</span>
+        </div>
+      </section>
+
+      <footer class="page-footer">
+        <span>BUGHUNTER <span>/</span> FORENSIC QA CONSOLE</span>
+        <span>Test carefully. Keep the evidence.</span>
+      </footer>
+    </div>
   </main>
 
-  <div id="toast"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
   <script src="/static/app.js"></script>
 </body>
 </html>
